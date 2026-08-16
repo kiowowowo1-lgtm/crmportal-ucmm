@@ -1,318 +1,58 @@
-<!DOCTYPE html>
-<html lang="tl">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CRM Portal - Login</title>
-  <style>
-    /* 
-      ========================================================================
-      STYLING & DESIGN SYSTEM (CRM Portal Header & Mobile-Friendly Theme)
-      ========================================================================
-      (a) Ano ang ginagawa nito: Nagbibigay ng malinis, propesyonal, at responsive na UI.
-      (b) Bakit ganito ang approach: Ginamit ang Navy Blue (#1F4E78) accent para sa 
-          konsistent na branding sa buong CRM Portal. Simple at madaling gamitin sa mobile.
-      (c) Saan kumokonekta: Sa lahat ng viewport screens (Desktop, Tablet, Mobile).
-      ========================================================================
-    */
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    }
+<script>
+    // Live Google Apps Script Executable URL
+    const API_BASE_URL = "https://script.google.com/macros/s/AKfycbycl_B42BsF0dYC0l6vRpKFHnfqZb-il2k6ALl3rPWMRxERzUdKAZnAgKtkrHUS9PNjaQ/exec";
 
-    body {
-      background-color: #f4f6f9;
-      color: #333333;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      padding: 20px;
-    }
-
-    .login-card {
-      background: #ffffff;
-      width: 100%;
-      max-width: 400px;
-      padding: 30px 25px;
-      border-radius: 12px;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
-      border-top: 6px solid #1F4E78;
-    }
-
-    .brand-header {
-      text-align: center;
-      margin-bottom: 25px;
-    }
-
-    .brand-header h1 {
-      font-size: 26px;
-      color: #1F4E78;
-      font-weight: 700;
-      letter-spacing: -0.5px;
-    }
-
-    .brand-header p {
-      font-size: 14px;
-      color: #666666;
-      margin-top: 5px;
-    }
-
-    .form-group {
-      margin-bottom: 18px;
-    }
-
-    .form-group label {
-      display: block;
-      font-size: 14px;
-      font-weight: 600;
-      color: #444444;
-      margin-bottom: 6px;
-    }
-
-    .form-control {
-      width: 100%;
-      padding: 12px 14px;
-      font-size: 15px;
-      border: 1px solid #cccccc;
-      border-radius: 6px;
-      outline: none;
-      transition: border-color 0.2s ease;
-    }
-
-    .form-control:focus {
-      border-color: #1F4E78;
-      box-shadow: 0 0 0 3px rgba(31, 78, 120, 0.15);
-    }
-
-    .btn-login {
-      width: 100%;
-      padding: 14px;
-      font-size: 16px;
-      font-weight: 600;
-      color: #ffffff;
-      background-color: #1F4E78;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      transition: background-color 0.2s ease;
-      margin-top: 10px;
-    }
-
-    .btn-login:hover {
-      background-color: #163754;
-    }
-
-    .btn-login:disabled {
-      background-color: #a0b2c6;
-      cursor: not-allowed;
-    }
-
-    .alert {
-      padding: 12px;
-      border-radius: 6px;
-      font-size: 14px;
-      margin-bottom: 18px;
-      display: none;
-    }
-
-    .alert-danger {
-      background-color: #f8d7da;
-      color: #721c24;
-      border: 1px solid #f5c6cb;
-    }
-
-    .alert-success {
-      background-color: #d4edda;
-      color: #155724;
-      border: 1px solid #c3e6cb;
-    }
-
-    .footer-note {
-      text-align: center;
-      font-size: 12px;
-      color: #888888;
-      margin-top: 20px;
-    }
-  </style>
-</head>
-<body>
-
-  <div class="login-card">
-    <!-- Branding Header -->
-    <div class="brand-header">
-      <h1>CRM Portal</h1>
-      <p>Auto Repair Shop Management System</p>
-    </div>
-
-    <!-- Feedback Message Container -->
-    <div id="msgBox" class="alert"></div>
-
-    <!-- Login Form -->
-    <form id="loginForm" onsubmit="handleLogin(event)">
-      <div class="form-group">
-        <label for="identifier">Email o Employee ID</label>
-        <input 
-          type="text" 
-          id="identifier" 
-          class="form-control" 
-          placeholder="hal. EMP-001 o juan@shop.com" 
-          required 
-          autocomplete="username"
-        />
-      </div>
-
-      <div class="form-group">
-        <label for="password">Password</label>
-        <input 
-          type="password" 
-          id="password" 
-          class="form-control" 
-          placeholder="Ipasok ang password" 
-          required 
-          autocomplete="current-password"
-        />
-      </div>
-
-      <button type="submit" id="btnLogin" class="btn-login">Mag-login</button>
-    </form>
-
-    <div class="footer-note">
-      &copy; CRM Portal. All Rights Reserved.
-    </div>
-  </div>
-
-  <script>
-    /*
-      ========================================================================
-      FRONTEND SCRIPT & API INTEGRATION
-      ========================================================================
-      (a) Ano ang ginagawa nito: Pinamamahalaan ang login submission, pakikipag-ugnayan
-          sa Google Apps Script Web App API, at pag-store ng user session sa localStorage.
-      (b) Bakit ganito ang approach: Ginawang configurable ang API_BASE_URL para
-          madaling mai-deploy sa Vercel habang tumatawag sa hiwalay na Apps Script Web App.
-      (c) Saan kumokonekta: Sa `Code.gs` (doPost -> handleApiRequest -> authService.gs).
-      ========================================================================
-    */
-
-    // Configurable Backend API Web App URL (Palitan ito kapag nai-deploy na ang Apps Script bilang Web App)
-    // Kapag naka-host sa Vercel, dito ilalagay ang Google Apps Script Executable URL.
-    const API_BASE_URL = window.location.href.includes("script.google.com") 
-      ? window.location.href.split('?')[0] 
-      : "YOUR_DEPLOYED_GAS_WEB_APP_URL_HERE";
-
-    /**
-     * Nagsasagawa ng validation at nagpapadala ng Login API Request sa Backend.
-     * @param {Event} event - Form submission event
-     */
     async function handleLogin(event) {
       event.preventDefault();
-
-      const identifierInput = document.getElementById("identifier").value.trim();
-      const passwordInput = document.getElementById("password").value.trim();
+      
+      const emailInput = document.getElementById("email").value;
+      const passwordInput = document.getElementById("password").value;
+      const errorMsg = document.getElementById("errorMsg");
       const btnLogin = document.getElementById("btnLogin");
-      const msgBox = document.getElementById("msgBox");
 
-      // Linisin at itago muna ang dating message
-      msgBox.style.display = "none";
-      msgBox.className = "alert";
-      msgBox.textContent = "";
-
-      if (!identifierInput || !passwordInput) {
-        showMessage("Pakilagay ang iyong Email/ID at Password.", "danger");
-        return;
-      }
-
-      // I-set ang Loading State sa Button
+      errorMsg.style.display = "none";
       btnLogin.disabled = true;
-      btnLogin.textContent = "Sinusuri...";
+      btnLogin.textContent = "Nagmemecheck ng account...";
 
       try {
-        // (a) Ihanda ang Request Payload para sa Backend Dispatcher (Code.gs)
-        const payload = {
-          action: "login",
-          username: identifierInput,
-          password: passwordInput
-        };
-
-        // (b) Tumawag sa Apps Script Backend gamit ang fetch()
-        // Gagamitin ang POST request na may JSON payload
         const response = await fetch(API_BASE_URL, {
           method: "POST",
-          headers: {
-            "Content-Type": "text/plain;charset=utf-8" // Ginagamit para maiwasan ang strict CORS preflight sa GAS
-          },
-          body: JSON.stringify(payload)
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify({
+            action: "login",
+            email: emailInput,
+            password: passwordInput
+          })
         });
 
         const result = await response.json();
 
-        // (c) Suriin ang tugon ng Backend
         if (result.success && result.data) {
-          showMessage(result.message || "Matagumpay na nag-login!", "success");
-
-          // I-save ang User Session Data sa Browser LocalStorage
+          // I-save ang user session sa LocalStorage
           localStorage.setItem("crm_user_session", JSON.stringify(result.data));
 
-          // I-redirect sa tamang portal view batay sa Role pagkaraan ng 1 segundo
-          setTimeout(() => {
-            redirectUserByRole(result.data.role);
-          }, 1000);
-
+          // Role-based Redirection
+          const role = String(result.data.role).toLowerCase();
+          
+          if (role === "pm" || role === "page manager") {
+            window.location.href = "pmDashboardView.html";
+          } else if (role === "sa" || role === "service advisor") {
+            window.location.href = "saDashboardView.html";
+          } else {
+            // Default fallback
+            window.location.href = "pmDashboardView.html";
+          }
         } else {
-          showMessage(result.message || "Maling credentials. Pakisubok muli.", "danger");
-          btnLogin.disabled = false;
-          btnLogin.textContent = "Mag-login";
+          errorMsg.textContent = result.message || "Maling email o password.";
+          errorMsg.style.display = "block";
         }
-
-      } catch (error) {
-        console.error("Login Error:", error);
-        showMessage("Hindi makakonekta sa server. Pakisuri ang iyong koneksyon.", "danger");
+      } catch (err) {
+        console.error("Login Error:", err);
+        errorMsg.textContent = "Hindi makakonekta sa server. Pakisuri ang koneksyon.";
+        errorMsg.style.display = "block";
+      } finally {
         btnLogin.disabled = false;
         btnLogin.textContent = "Mag-login";
       }
     }
-
-    /**
-     * Nagpapakita ng visual message feedback sa user.
-     * @param {string} text - Mensaheng ipapakita
-     * @param {string} type - 'success' o 'danger'
-     */
-    function showMessage(text, type) {
-      const msgBox = document.getElementById("msgBox");
-      msgBox.textContent = text;
-      msgBox.className = `alert alert-${type}`;
-      msgBox.style.display = "block";
-    }
-
-    /**
-     * Nagre-redirect sa nararapat na module view ayon sa Role ng empleyado.
-     * @param {string} role - User Role (PM, SA, BM, HR, MECHANIC, IT_ADMIN, DIREK)
-     */
-    function redirectUserByRole(role) {
-      // Sa mga susunod na phase, ang mga ito ay tuturo sa kani-kanilang portal pages
-      const roleRoutes = {
-        "PM": "pmDashboardView.html",
-        "SA": "saDashboardView.html",
-        "BM": "bmDashboardView.html",
-        "HR": "hrDashboardView.html",
-        "MECHANIC": "mechanicDashboardTab.html",
-        "IT_ADMIN": "itDashboardTab.html",
-        "DIREK": "direkDashboardTab.html"
-      };
-
-      const targetPage = roleRoutes[role] || "pmDashboardView.html";
-      
-      // Kung naka-host sa GAS direct view
-      if (window.location.href.includes("script.google.com")) {
-        window.location.href = API_BASE_URL + "?page=" + role;
-      } else {
-        // Kung naka-deploy sa Vercel static routing
-        window.location.href = targetPage;
-      }
-    }
   </script>
-</body>
-</html>
